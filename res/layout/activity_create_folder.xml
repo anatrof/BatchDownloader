@@ -1,0 +1,38 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CreateFolderActivity" >
+
+    <TextView
+        android:id="@+id/completePath"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:text="Complete path" />
+
+    <EditText
+        android:id="@+id/folderToCreate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/completePath"
+        android:layout_marginTop="20dp"
+        android:ems="10"
+        android:text="Enter folder name ..." >
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/createFolderBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/folderToCreate"
+        android:text="Create folder" />
+
+</RelativeLayout>

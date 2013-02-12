@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="4dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:src="@android:drawable/checkbox_on_background" >
+    </ImageView>
+
+        <TextView
+        android:id="@+id/folder_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:gravity="left"
+        android:includeFontPadding="false"
+        android:paddingLeft="10sp"
+        android:textSize="20sp" />
+
+<!--     <Button -->
+<!--         android:id="@+id/folder_text" -->
+<!--         android:layout_width="fill_parent" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:focusable="false" -->
+<!--         android:focusableInTouchMode="false" -->
+<!--         android:gravity="left" -->
+<!--         android:includeFontPadding="false" -->
+<!--         android:paddingLeft="10sp" -->
+<!--         android:textSize="15sp" /> -->
+
+</LinearLayout>

@@ -1,19 +1,25 @@
 package com.dudak.batchdownloader;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.IntentService;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.Handler;
+import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
+import android.os.ResultReceiver;
 import android.util.Log;
 
 public class DownloadService extends IntentService {
@@ -27,27 +33,25 @@ public class DownloadService extends IntentService {
 	}
 
 	private final String TAG = "DownloadService";
-	private List<URL> urlList;
 	private int listPosition;
-	private File destPath;
 	private ProgressDialog progressDialog;
-	private Looper looper;
-
-	private class DownloadHandler extends Handler {
-		@Override
-		public void handleMessage(Message msg) {
-			// TODO Auto-generated method stub
-			super.handleMessage(msg);
-		}
-	}
+	private List<URL> urlList;
+	private File destPath;
+	private ResultReceiver receiver;
+	public static final int UPDATE_PROGRESS = 8344;
+	private Bundle resultData;
 
 	private void log(String s) {
 		Log.e(TAG, s);
 	}
 
+	private void log(Exception e) {
+		log(e.getLocalizedMessage());
+	}
+
 	@Override
 	public void onDestroy() {
-		// TODO Auto-generated method stub
+		log("onDestroy");
 		super.onDestroy();
 	}
 
@@ -60,86 +64,162 @@ public class DownloadService extends IntentService {
 	@Override
 	public void onStart(Intent intent, int startId) {
 		log("onStart");
-		// TODO Auto-generated method stub
+		urlList = (ArrayList<URL>) intent.getSerializableExtra("urls");
+		log("urls=" + urlList.toString());
+		destPath = (File) intent.getSerializableExtra("destPath");
+		log("destPath=" + destPath.toString());
+		receiver = (ResultReceiver) intent.getParcelableExtra("receiver");
+		log(receiver.toString());
+		resultData = new Bundle();
 		super.onStart(intent, startId);
+	}
+
+	private String getFileName(URL url) {
+		String path = url.getPath();
+		String[] parts = path.split("/");
+		path = parts[parts.length - 1];
+		return path;
+	}
+
+	private void downloadFile(URL url, File file) {
+		HttpURLConnection connection = null;
+		try {
+			connection = (HttpURLConnection) url.openConnection();
+		} catch (IOException e) {
+			log(e);
+		}
+
+		if (connection != null) {
+			int downloaded = 0;
+			if (file.exists()) {
+				downloaded = (int) file.length();
+				connection.setRequestProperty("Range", "bytes=" + (file.length()) + "-");
+			}
+			connection.setDoInput(true);
+			connection.setDoOutput(true);
+			BufferedInputStream in = null;
+			BufferedOutputStream bout = null;
+			FileOutputStream fos = null;
+			try {
+				in = new BufferedInputStream(connection.getInputStream());
+			} catch (IOException e) {
+				log(e);
+			}
+			try {
+				fos = (downloaded == 0) ? new FileOutputStream(file) : new FileOutputStream(file, true);
+			} catch (FileNotFoundException e) {
+				log(e);
+			}
+			int fileLength = connection.getContentLength();
+			bout = new BufferedOutputStream(fos, 1024);
+			byte[] data = new byte[1024];
+			int x = 0;
+			try {
+				while ((x = in.read(data, 0, 1024)) >= 0) {
+					bout.write(data, 0, x);
+					downloaded += x;
+					resultData.putInt("progress1", (int) (downloaded * 100 / fileLength));
+					if (resultData != null)
+						receiver.send(UPDATE_PROGRESS, resultData);
+				}
+			} catch (IOException e) {
+				log(e);
+			} finally {
+				if (bout != null)
+					try {
+						bout.close();
+
+					} catch (IOException e) {
+						log(e);
+					}
+				if (fos != null)
+					try {
+						fos.close();
+					} catch (IOException e) {
+						log(e);
+					}
+				if (in != null)
+					try {
+						in.close();
+					} catch (IOException e) {
+						log(e);
+					}
+			}
+			resultData.putInt("progress1", 100);
+			if (resultData != null)
+				receiver.send(UPDATE_PROGRESS, resultData);
+		}
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		log("onStartCommand");
-		// TODO Auto-generated method stub
 		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		log("onConfigurationChanged");
-		// TODO Auto-generated method stub
 		super.onConfigurationChanged(newConfig);
 	}
 
 	@Override
 	public void onLowMemory() {
 		log("onLowMemory");
-		// TODO Auto-generated method stub
 		super.onLowMemory();
-	}
-
-	@Override
-	public void onTrimMemory(int level) {
-		log("onTrimMemory");
-		// TODO Auto-generated method stub
-		// super.onTrimMemory(level);
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
 		log("onUnbind");
-		// TODO Auto-generated method stub
 		return super.onUnbind(intent);
 	}
 
 	@Override
 	public void onRebind(Intent intent) {
 		log("onRebind");
-		// TODO Auto-generated method stub
 		super.onRebind(intent);
-	}
-
-	@Override
-	public void onTaskRemoved(Intent rootIntent) {
-		log("onTaskRemoved");
-		// TODO Auto-generated method stub
-		// super.onTaskRemoved(rootIntent);
 	}
 
 	@Override
 	protected void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
 		log("dump");
-		// TODO Auto-generated method stub
 		super.dump(fd, writer, args);
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		log("onBind");
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		log("onHandleIntent");
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			log(e.getLocalizedMessage());
+		if (urlList != null && destPath != null) {
+			for (int i = 0; i < urlList.size(); i++) {
+				File downloadPath;
+				try {
+					downloadPath = new File(destPath.getCanonicalFile() + "/" + getFileName(urlList.get(i)));
+					downloadFile(urlList.get(i), downloadPath);
+					resultData.putInt("progress2", (int) ((i + 1) * 100 / urlList.size()));
+					if (receiver != null)
+						receiver.send(UPDATE_PROGRESS, resultData);
+				} catch (IOException e) {
+					log(e);
+				}
+			}
+		} else {
+			log("URL list or rootPath is null");
 		}
+		resultData.putInt("progress2", 100);
+		if (receiver != null)
+			receiver.send(UPDATE_PROGRESS, resultData);
 	}
 
 	@Override
 	public void setIntentRedelivery(boolean enabled) {
-		// TODO Auto-generated method stub
+		log("setIntentRedelivery");
 		super.setIntentRedelivery(enabled);
 	}
 

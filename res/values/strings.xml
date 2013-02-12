@@ -2,7 +2,18 @@
 <resources>
 
     <string name="app_name">BatchDownloader</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="create_folder_name">CreateFolder</string>
     <string name="menu_settings">Settings</string>
-
+    <!--  -->
+    <string name="main_complete_path">Complete path</string>
+    
+    <!--  -->
+    <string name="cancel_button">Cancel</string>
+    <string name="ok_button">OK</string>
+    <string name="download_button">Download</string>
+    
+    <string name="create_folder_text">Create folder</string>
+    <string name="create_folder_hint">Enter folder name</string>
+    <string name="create_new_folder">Create new folder</string>
+	
 </resources>

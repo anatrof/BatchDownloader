@@ -4,28 +4,31 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/hello_world" />
-
     <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnDownload"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/textView1"
-        android:layout_centerHorizontal="true"
-        android:text="start" />
+        android:text="@string/download_button" />
 
-    <Button
-        android:id="@+id/button2"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
-        android:layout_centerHorizontal="true"
-        android:text="stop" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnDownload"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/completePathText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/main_complete_path" />
+
+        <ListView
+            android:id="@+id/folderList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+        </ListView>
+    </LinearLayout>
 
 </RelativeLayout>
