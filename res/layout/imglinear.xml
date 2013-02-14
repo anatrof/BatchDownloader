@@ -24,7 +24,7 @@
         android:gravity="left"
         android:includeFontPadding="false"
         android:paddingLeft="10sp"
-        android:textSize="20sp" />
+        android:textSize="30sp" />
 
 <!--     <Button -->
 <!--         android:id="@+id/folder_text" -->

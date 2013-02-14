@@ -274,6 +274,14 @@ public class MainActivity extends Activity {
 										updateRootPath(folderName);
 									}
 									root.mkdirs();
+									try {
+										completePath.setText(root.getCanonicalPath());
+									} catch (IOException e) {
+										error(e);
+									}
+									ArrayAdapter<String> adapter = Utilites.getAdapter(root,
+											getApplicationContext());
+									listFolders.setAdapter(adapter);
 								}
 
 							});
@@ -368,8 +376,8 @@ public class MainActivity extends Activity {
 				int progress1 = resultData.getInt("progress1");
 				int progress2 = resultData.getInt("progress2");
 				if (mProgressDialog != null) {
-					mProgressDialog.setProgress(progress2);
-					mProgressDialog.setSecondaryProgress(progress1);
+					mProgressDialog.setProgress(progress1);
+					mProgressDialog.setSecondaryProgress(progress2);
 					if (progress2 == 100) {
 						mProgressDialog.dismiss();
 					}
