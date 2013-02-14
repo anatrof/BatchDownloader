@@ -3,6 +3,8 @@
     android:id="@+id/folder_name"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:hint="@string/create_folder_hint" >
 
     <requestFocus />

@@ -133,9 +133,9 @@ public class MainActivity extends Activity {
 			try {
 				urls.add(new URL(URLDecoder.decode(s, "ISO-8859-1")));
 			} catch (MalformedURLException e) {
-				Log.e(TAG, "Bad URL");
+				error(e);
 			} catch (UnsupportedEncodingException e) {
-				Log.e(TAG, "Unsupported encoding in url");
+				error(e);
 			}
 		}
 		return urls;
@@ -192,7 +192,7 @@ public class MainActivity extends Activity {
 				}
 			}
 		} else {
-			Log.e(TAG, "Wrong MIME type of url file");
+			error("Wrong MIME type of url file");
 		}
 	}
 
@@ -205,7 +205,7 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 		} else {
-			Log.e(TAG, "root is null");
+			error("root is null");
 		}
 	}
 
@@ -213,7 +213,7 @@ public class MainActivity extends Activity {
 		try {
 			root = new File(root.getCanonicalPath() + "/" + folder);
 		} catch (IOException e) {
-			Log.e(TAG, e.getLocalizedMessage());
+			error(e.getLocalizedMessage());
 		}
 		updateCompletePath();
 	}
@@ -243,23 +243,32 @@ public class MainActivity extends Activity {
 		listFolders.setBackgroundColor(Color.BLACK);
 		listFolders.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
 				Object o = listFolders.getAdapter().getItem(position);
-				Log.d(TAG, "clicked " + o.getClass().getName());
-				String textClicked = String.valueOf(((TextView) ((LinearLayout) view).getChildAt(1)).getText());
-				Log.d(TAG, "clicked " + textClicked);
-				if (getResources().getString(R.string.create_new_folder).equals(textClicked)) {
-					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+				debug("clicked " + o.getClass().getName());
+				String textClicked = String
+						.valueOf(((TextView) ((LinearLayout) view)
+								.getChildAt(1)).getText());
+				debug("clicked " + textClicked);
+				if (getResources().getString(R.string.create_new_folder)
+						.equals(textClicked)) {
+					AlertDialog.Builder builder = new AlertDialog.Builder(
+							MainActivity.this);
 					builder.setTitle(R.string.create_new_folder);
 					builder.setCancelable(true);
 					LayoutInflater inflater = getLayoutInflater();
-					builder.setView(inflater.inflate(R.layout.edit_layout, null));
-					builder.setPositiveButton(getResources().getString(R.string.ok_button),
+					builder.setView(inflater
+							.inflate(R.layout.edit_layout, null));
+					builder.setPositiveButton(
+							getResources().getString(R.string.ok_button),
 							new DialogInterface.OnClickListener() {
 
 								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									String folderName = ((EditText) ((AlertDialog) dialog).getCurrentFocus()).getText()
+								public void onClick(DialogInterface dialog,
+										int which) {
+									String folderName = ((EditText) ((AlertDialog) dialog)
+											.getCurrentFocus()).getText()
 											.toString();
 									if (folderName.length() > 0) {
 										updateRootPath(folderName);
@@ -268,11 +277,13 @@ public class MainActivity extends Activity {
 								}
 
 							});
-					builder.setNegativeButton(getResources().getString(R.string.cancel_button),
+					builder.setNegativeButton(
+							getResources().getString(R.string.cancel_button),
 							new DialogInterface.OnClickListener() {
 
 								@Override
-								public void onClick(DialogInterface dialog, int which) {
+								public void onClick(DialogInterface dialog,
+										int which) {
 								}
 							});
 					AlertDialog dialog = builder.create();
@@ -282,13 +293,30 @@ public class MainActivity extends Activity {
 					try {
 						completePath.setText(root.getCanonicalPath());
 					} catch (IOException e) {
-						e.printStackTrace();
+						error(e);
 					}
 				}
-				ArrayAdapter<String> adapter = Utilites.getAdapter(root, getApplicationContext());
+				ArrayAdapter<String> adapter = Utilites.getAdapter(root,
+						getApplicationContext());
 				listFolders.setAdapter(adapter);
 			}
 		});
+	}
+
+	private void debug(String s) {
+		Log.d(TAG, s);
+	}
+
+	private void debug(Exception e) {
+		Log.d(TAG, e.getLocalizedMessage());
+	}
+
+	private void error(Exception e) {
+		Log.e(TAG, e.getLocalizedMessage());
+	}
+
+	private void error(String s) {
+		Log.e(TAG, s);
 	}
 
 	@Override
@@ -299,7 +327,8 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		// downloadFile = (DownloadFile) savedInstanceState.getSerializable("downloader");
+		// downloadFile = (DownloadFile)
+		// savedInstanceState.getSerializable("downloader");
 		// restoreAsyncTask(downloadFile);
 		super.onRestoreInstanceState(savedInstanceState);
 	}
@@ -307,17 +336,21 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
-			Toast.makeText(this, "Have root " + data.getExtras().getString("root"), Toast.LENGTH_SHORT).show();
+			Toast.makeText(this,
+					"Have root " + data.getExtras().getString("root"),
+					Toast.LENGTH_SHORT).show();
 			if (data.hasExtra("root")) {
 				root = new File(data.getExtras().getString("root"));
 				try {
 					completePath.setText(root.getCanonicalPath());
 				} catch (IOException e) {
-					e.printStackTrace();
+					error(e);
 				}
-				// Toast.makeText(this, "Start download into " + data.getExtras().getString("root"), Toast.LENGTH_SHORT)
+				// Toast.makeText(this, "Start download into " +
+				// data.getExtras().getString("root"), Toast.LENGTH_SHORT)
 				// .show();
-				ArrayAdapter<String> adapter = Utilites.getAdapter(root, getApplicationContext());
+				ArrayAdapter<String> adapter = Utilites.getAdapter(root,
+						getApplicationContext());
 				listFolders.setAdapter(adapter);
 			}
 		}

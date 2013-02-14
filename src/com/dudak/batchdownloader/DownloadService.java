@@ -41,35 +41,35 @@ public class DownloadService extends IntentService {
 	public static final int UPDATE_PROGRESS = 8344;
 	private Bundle resultData;
 
-	private void log(String s) {
-		Log.e(TAG, s);
+	private void debug(String s) {
+		Log.d(TAG, s);
 	}
 
-	private void log(Exception e) {
-		log(e.getLocalizedMessage());
+	private void debug(Exception e) {
+		Log.d(TAG, e.getLocalizedMessage());
 	}
 
 	@Override
 	public void onDestroy() {
-		log("onDestroy");
+		debug("onDestroy");
 		super.onDestroy();
 	}
 
 	@Override
 	public void onCreate() {
-		log("onCreate");
+		debug("onCreate");
 		super.onCreate();
 	}
 
 	@Override
 	public void onStart(Intent intent, int startId) {
-		log("onStart");
+		debug("onStart");
 		urlList = (ArrayList<URL>) intent.getSerializableExtra("urls");
-		log("urls=" + urlList.toString());
+		debug("urls=" + urlList.toString());
 		destPath = (File) intent.getSerializableExtra("destPath");
-		log("destPath=" + destPath.toString());
+		debug("destPath=" + destPath.toString());
 		receiver = (ResultReceiver) intent.getParcelableExtra("receiver");
-		log(receiver.toString());
+		debug(receiver.toString());
 		resultData = new Bundle();
 		super.onStart(intent, startId);
 	}
@@ -86,14 +86,15 @@ public class DownloadService extends IntentService {
 		try {
 			connection = (HttpURLConnection) url.openConnection();
 		} catch (IOException e) {
-			log(e);
+			error(e);
 		}
 
 		if (connection != null) {
 			int downloaded = 0;
 			if (file.exists()) {
 				downloaded = (int) file.length();
-				connection.setRequestProperty("Range", "bytes=" + (file.length()) + "-");
+				connection.setRequestProperty("Range",
+						"bytes=" + (file.length()) + "-");
 			}
 			connection.setDoInput(true);
 			connection.setDoOutput(true);
@@ -103,12 +104,13 @@ public class DownloadService extends IntentService {
 			try {
 				in = new BufferedInputStream(connection.getInputStream());
 			} catch (IOException e) {
-				log(e);
+				error(e);
 			}
 			try {
-				fos = (downloaded == 0) ? new FileOutputStream(file) : new FileOutputStream(file, true);
+				fos = (downloaded == 0) ? new FileOutputStream(file)
+						: new FileOutputStream(file, true);
 			} catch (FileNotFoundException e) {
-				log(e);
+				error(e);
 			}
 			int fileLength = connection.getContentLength();
 			bout = new BufferedOutputStream(fos, 1024);
@@ -118,31 +120,32 @@ public class DownloadService extends IntentService {
 				while ((x = in.read(data, 0, 1024)) >= 0) {
 					bout.write(data, 0, x);
 					downloaded += x;
-					resultData.putInt("progress1", (int) (downloaded * 100 / fileLength));
+					resultData.putInt("progress1",
+							(int) (downloaded * 100 / fileLength));
 					if (resultData != null)
 						receiver.send(UPDATE_PROGRESS, resultData);
 				}
 			} catch (IOException e) {
-				log(e);
+				error(e);
 			} finally {
 				if (bout != null)
 					try {
 						bout.close();
 
 					} catch (IOException e) {
-						log(e);
+						error(e);
 					}
 				if (fos != null)
 					try {
 						fos.close();
 					} catch (IOException e) {
-						log(e);
+						error(e);
 					}
 				if (in != null)
 					try {
 						in.close();
 					} catch (IOException e) {
-						log(e);
+						error(e);
 					}
 			}
 			resultData.putInt("progress1", 100);
@@ -153,73 +156,80 @@ public class DownloadService extends IntentService {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		log("onStartCommand");
+		debug("onStartCommand");
 		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
-		log("onConfigurationChanged");
+		debug("onConfigurationChanged");
 		super.onConfigurationChanged(newConfig);
 	}
 
 	@Override
 	public void onLowMemory() {
-		log("onLowMemory");
+		debug("onLowMemory");
 		super.onLowMemory();
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		log("onUnbind");
+		debug("onUnbind");
 		return super.onUnbind(intent);
 	}
 
 	@Override
 	public void onRebind(Intent intent) {
-		log("onRebind");
+		debug("onRebind");
 		super.onRebind(intent);
 	}
 
 	@Override
 	protected void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
-		log("dump");
+		debug("dump");
 		super.dump(fd, writer, args);
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		log("onBind");
+		debug("onBind");
 		return null;
 	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		log("onHandleIntent");
+		debug("onHandleIntent");
 		if (urlList != null && destPath != null) {
 			for (int i = 0; i < urlList.size(); i++) {
 				File downloadPath;
 				try {
-					downloadPath = new File(destPath.getCanonicalFile() + "/" + getFileName(urlList.get(i)));
+					downloadPath = new File(destPath.getCanonicalFile() + "/"
+							+ getFileName(urlList.get(i)));
 					downloadFile(urlList.get(i), downloadPath);
-					resultData.putInt("progress2", (int) ((i + 1) * 100 / urlList.size()));
+					resultData.putInt("progress2",
+							(int) ((i + 1) * 100 / urlList.size()));
 					if (receiver != null)
 						receiver.send(UPDATE_PROGRESS, resultData);
 				} catch (IOException e) {
-					log(e);
+					error(e);
 				}
 			}
 		} else {
-			log("URL list or rootPath is null");
+			debug("URL list or rootPath is null");
 		}
 		resultData.putInt("progress2", 100);
 		if (receiver != null)
 			receiver.send(UPDATE_PROGRESS, resultData);
 	}
 
+	private void error(IOException e) {
+		Log.e(TAG, e.getLocalizedMessage());
+
+	}
+
 	@Override
 	public void setIntentRedelivery(boolean enabled) {
-		log("setIntentRedelivery");
+		debug("setIntentRedelivery");
 		super.setIntentRedelivery(enabled);
 	}
 
