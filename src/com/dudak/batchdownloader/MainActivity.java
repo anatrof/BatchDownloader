@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -52,21 +52,6 @@ public class MainActivity extends Activity {
 	private LinkedList<String> rootStack;
 	private DownloadFile downloadFile;
 
-	private void restoreAsyncTask() {
-		downloadFile = (DownloadFile) getLastNonConfigurationInstance();
-		if (downloadFile != null) {
-			restoreAsyncTask(downloadFile);
-		}
-	}
-
-	private void restoreAsyncTask(DownloadFile downloadFile) {
-		mProgressDialog = createProgress();
-		root = downloadFile.getRootPath();
-		updateCompletePath();
-		downloadFile.setmProgressDialog(mProgressDialog);
-		mProgressDialog.show();
-	}
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -76,7 +61,6 @@ public class MainActivity extends Activity {
 		initEnv();
 		initListFolders();
 		initButton();
-		// restoreAsyncTask();
 	}
 
 	@Override
@@ -131,14 +115,31 @@ public class MainActivity extends Activity {
 		ArrayList<URL> urls = new ArrayList<URL>();
 		for (String s : pretender) {
 			try {
-				urls.add(new URL(URLDecoder.decode(s, "ISO-8859-1")));
+				urls.add(getRedirectedURL(new URL(s)));
 			} catch (MalformedURLException e) {
-				error(e);
-			} catch (UnsupportedEncodingException e) {
 				error(e);
 			}
 		}
 		return urls;
+	}
+
+	private URL getRedirectedURL(URL url) {
+		HttpURLConnection con = null;
+		try {
+			con = (HttpURLConnection) (url.openConnection());
+			con.setInstanceFollowRedirects(false);
+			con.connect();
+			int responseCode = con.getResponseCode();
+			if (responseCode == 302) {
+				String location = con.getHeaderField("Location");
+				return new URL(URLDecoder.decode(location, "ISO-8859-1"));
+			}
+		} catch (IOException e) {
+			error(e);
+		} finally {
+			con.disconnect();
+		}
+		return url;
 	}
 
 	@Override
@@ -152,7 +153,6 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onResume() {
-		// restoreAsyncTask();
 		super.onResume();
 	}
 
@@ -165,7 +165,6 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onStart() {
-		// restoreAsyncTask();
 		super.onStart();
 	}
 
@@ -275,12 +274,14 @@ public class MainActivity extends Activity {
 									}
 									root.mkdirs();
 									try {
-										completePath.setText(root.getCanonicalPath());
+										completePath.setText(root
+												.getCanonicalPath());
 									} catch (IOException e) {
 										error(e);
 									}
-									ArrayAdapter<String> adapter = Utilites.getAdapter(root,
-											getApplicationContext());
+									ArrayAdapter<String> adapter = Utilites
+											.getAdapter(root,
+													getApplicationContext());
 									listFolders.setAdapter(adapter);
 								}
 
@@ -337,7 +338,6 @@ public class MainActivity extends Activity {
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		// downloadFile = (DownloadFile)
 		// savedInstanceState.getSerializable("downloader");
-		// restoreAsyncTask(downloadFile);
 		super.onRestoreInstanceState(savedInstanceState);
 	}
 
